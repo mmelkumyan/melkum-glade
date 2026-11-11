@@ -4,7 +4,8 @@ use bevy::prelude::*;
 use bevy_panorbit_camera::*;
 use bevy::color::palettes::css::*;
 use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
-
+use bevy::mesh::VertexAttributeValues;
+use noise_functions::*;
 
 fn main() {
     // PLUGINS
@@ -55,12 +56,25 @@ fn setup(mut cmds: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: Re
             .looking_at(Vec3::ZERO, Vec3::Y)
     ));
 
+    // Generate ground mesh
+    let mut ground = Plane3d::default()
+        .mesh()
+        .size(64.0, 64.0)
+        .subdivisions(64)
+        .build();
+    let noise = Perlin.seed(10).frequency(0.05);
+    let height = 6.0;
+    if let Some(VertexAttributeValues::Float32x3(positions)) = ground.attribute_mut(Mesh::ATTRIBUTE_POSITION) {
+        for pos in positions.iter_mut() {
+            pos[1] = noise.sample2([pos[0], pos[2]]) * height;
+        }
+    }
+    ground.compute_normals();
+
     // Spawn ground
     cmds.spawn((
         Name::new("Ground"),
-        Mesh3d(meshes.add(Plane3d::default()
-            .mesh().size(64.0, 64.0).subdivisions(64)
-        )),
+        Mesh3d(meshes.add(ground)),
         MeshMaterial3d(materials.add(StandardMaterial {
             base_color: Color::srgba(0.2, 0.15, 0.1, 1.0),
             ..Default::default()
