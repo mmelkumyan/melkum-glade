@@ -7,6 +7,13 @@ use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 use bevy::mesh::VertexAttributeValues;
 use noise_functions::*;
 
+// Spline resource 
+
+#[derive(Resource, Default)]
+struct SplineDraft {
+    points: Vec<Vec3>,
+}
+
 fn main() {
     // PLUGINS
     App::new().add_plugins((
@@ -29,8 +36,12 @@ fn main() {
     .add_systems(
     Update, (
         draw_grid,
-        place_point
+        place_point,
+        draw_spline
     ))
+
+    // ADD RESOURCES
+    .init_resource::<SplineDraft>()
     .run();
 }
 
@@ -117,7 +128,8 @@ fn place_point(
     window: Single<&Window>,
     camera_query: Single<(&Camera, &GlobalTransform)>,
     mut gizmos: Gizmos,
-    mut last_point: Local<Option<Vec3>>
+    // mut last_point: Local<Option<Vec3>>
+    mut spline: ResMut<SplineDraft>
 ) {
     // Unpack cam/transform
     let (camera, camera_transform) = *camera_query;
@@ -133,19 +145,22 @@ fn place_point(
         // Get intersection point with ground
         let Some(hit_point) = ray.plane_intersection_point(Vec3::ZERO, InfinitePlane3d::new(Vec3::Y)) else {return;};
 
-        // Record pos
-        *last_point = Some(hit_point);   
+        // Record pos   
+        spline.points.push(hit_point);
     }
 
-    // Draw sphere
-    if let Some(p) = *last_point {
+    // Draw pts in spline
+    for p in spline.points.iter() {
         gizmos.sphere(Isometry3d::new(
             p + Dir3::Y * 0.1, 
             Quat::default()), 
-            1., 
+            0.2, 
             Color::WHITE
         );
     }
-
 }
 
+fn draw_spline(spline: Res<SplineDraft>, mut gizmos: Gizmos) {
+    let Ok(curve) = CubicCardinalSpline::new_catmull_rom(spline.points.clone()).to_curve() else {return;};
+    gizmos.linestrip(curve.iter_positions(100), Color::srgb(1., 0., 0.));
+}
