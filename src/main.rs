@@ -12,8 +12,8 @@ use terrain::TerrainPlugin;
 mod camera;
 use camera::CameraPlugin;
 
-mod draw;
-use draw::DrawPlugin;
+mod input;
+use input::DrawPlugin;
 
 fn main() {
     // PLUGINS
@@ -30,3 +30,15 @@ fn main() {
         ))
         .run();
 }
+
+/*
+HANDY COMMANDS:
+To run:
+> cargo run --features dev
+
+For best rust practices:
+> cargo clippy --fix
+
+Lint formatting:
+> cargo fmt
+*/
