@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
-use crate::terrain::ground_hit;
 use crate::spline::SplineDraft;
+use crate::terrain::ground_hit;
 
 pub struct DrawPlugin;
 
@@ -15,7 +15,7 @@ fn place_point(
     mouse: Res<ButtonInput<MouseButton>>,
     window: Single<&Window>,
     camera_query: Single<(&Camera, &GlobalTransform)>,
-    mut spline: ResMut<SplineDraft>
+    mut spline: ResMut<SplineDraft>,
 ) {
     // Unpack cam/transform
     let (camera, camera_transform) = *camera_query;
@@ -30,8 +30,7 @@ fn place_point(
             return;
         };
 
-        // Record pos   
+        // Record pos
         spline.points.push(hit_point);
     }
-    
 }

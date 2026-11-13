@@ -15,20 +15,18 @@ use camera::CameraPlugin;
 mod draw;
 use draw::DrawPlugin;
 
-
 fn main() {
     // PLUGINS
-    App::new().add_plugins((
-        DefaultPlugins,
-        EguiPlugin::default(),
-        WorldInspectorPlugin::default(),
-        
-        // Internal plugins
-        CameraPlugin,
-        TerrainPlugin,
-        SplinePlugin,
-        DrawPlugin
-    ))
-    .run();
+    App::new()
+        .add_plugins((
+            DefaultPlugins,
+            EguiPlugin::default(),
+            WorldInspectorPlugin::default(),
+            // Internal plugins
+            CameraPlugin,
+            TerrainPlugin,
+            SplinePlugin,
+            DrawPlugin,
+        ))
+        .run();
 }
-

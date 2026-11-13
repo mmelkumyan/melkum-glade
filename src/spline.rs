@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-// Spline resource 
+// Spline resource
 #[derive(Resource, Default)]
 pub struct SplineDraft {
     pub points: Vec<Vec3>,
@@ -19,17 +19,18 @@ impl Plugin for SplinePlugin {
 }
 
 fn build_curve(points: &[Vec3]) -> Option<CubicCurve<Vec3>> {
-    CubicCardinalSpline::new_catmull_rom(points.iter().copied()).to_curve().ok()
+    CubicCardinalSpline::new_catmull_rom(points.iter().copied())
+        .to_curve()
+        .ok()
 }
 
 fn draw_spline(spline: Res<SplineDraft>, mut gizmos: Gizmos) {
     // Draw points
     for p in spline.points.iter() {
-        gizmos.sphere(Isometry3d::new(
-            p + Dir3::Y * 0.1, 
-            Quat::default()), 
-            0.2, 
-            Color::WHITE
+        gizmos.sphere(
+            Isometry3d::new(p + Dir3::Y * 0.1, Quat::default()),
+            0.2,
+            Color::WHITE,
         );
     }
 
