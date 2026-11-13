@@ -7,19 +7,17 @@ use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 use bevy::mesh::VertexAttributeValues;
 use noise_functions::*;
 
-// Spline resource 
+mod spline;
+use spline::*;
 
-#[derive(Resource, Default)]
-struct SplineDraft {
-    points: Vec<Vec3>,
-}
 
 fn main() {
     // PLUGINS
     App::new().add_plugins((
         DefaultPlugins,
         PanOrbitCameraPlugin,
-        EguiPlugin::default()
+        EguiPlugin::default(),
+        SplinePlugin
     ))
     .add_plugins(
         WorldInspectorPlugin::default(),
@@ -36,8 +34,7 @@ fn main() {
     .add_systems(
     Update, (
         draw_grid,
-        place_point,
-        draw_spline
+        place_point
     ))
 
     // ADD RESOURCES
@@ -158,9 +155,4 @@ fn place_point(
             Color::WHITE
         );
     }
-}
-
-fn draw_spline(spline: Res<SplineDraft>, mut gizmos: Gizmos) {
-    let Ok(curve) = CubicCardinalSpline::new_catmull_rom(spline.points.clone()).to_curve() else {return;};
-    gizmos.linestrip(curve.iter_positions(100), Color::srgb(1., 0., 0.));
 }
