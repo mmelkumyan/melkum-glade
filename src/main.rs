@@ -1,14 +1,13 @@
-use std::f32::consts::PI;
-
 use bevy::prelude::*;
 use bevy_panorbit_camera::*;
 use bevy::color::palettes::css::*;
 use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
-use bevy::mesh::VertexAttributeValues;
-use noise_functions::*;
 
 mod spline;
 use spline::*;
+
+mod terrain;
+use terrain::*;
 
 
 fn main() {
@@ -17,7 +16,8 @@ fn main() {
         DefaultPlugins,
         PanOrbitCameraPlugin,
         EguiPlugin::default(),
-        SplinePlugin
+        SplinePlugin,
+        TerrainPlugin
     ))
     .add_plugins(
         WorldInspectorPlugin::default(),
@@ -33,7 +33,6 @@ fn main() {
     // UPDATE
     .add_systems(
     Update, (
-        draw_grid,
         place_point
     ))
 
@@ -43,7 +42,7 @@ fn main() {
 }
 
 // Set up the scene with everything it needs on startup
-fn setup(mut cmds: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) {
+fn setup(mut cmds: Commands) {
     // Spawn camera
     cmds.spawn((
         Name::new("Main Camera"),
@@ -64,55 +63,19 @@ fn setup(mut cmds: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: Re
             .looking_at(Vec3::ZERO, Vec3::Y)
     ));
 
-    // Generate ground mesh
-    let mut ground = Plane3d::default()
-        .mesh()
-        .size(64.0, 64.0)
-        .subdivisions(64)
-        .build();
-    let noise = Perlin.seed(10).frequency(0.05);
-    let height = 6.0;
-    if let Some(VertexAttributeValues::Float32x3(positions)) = ground.attribute_mut(Mesh::ATTRIBUTE_POSITION) {
-        for pos in positions.iter_mut() {
-            pos[1] = noise.sample2([pos[0], pos[2]]) * height;
-        }
-    }
-    ground.compute_normals();
-
-    // Spawn ground
-    cmds.spawn((
-        Name::new("Ground"),
-        Mesh3d(meshes.add(ground)),
-        MeshMaterial3d(materials.add(StandardMaterial {
-            base_color: Color::srgba(0.2, 0.15, 0.1, 1.0),
-            ..Default::default()
-        })),
-    ));
-
-    // Spawn cool cube
-    cmds.spawn((
-        Name::new("Cube"),
-        Mesh3d(meshes.add(Cuboid::default())),
-        MeshMaterial3d(materials.add(StandardMaterial {
-            base_color: BLUE.into(),
-            ..Default::default()
-        })),
-        Transform::from_xyz(0., 2., 0.)
-    ));
+    // // Spawn cool cube
+    // cmds.spawn((
+    //     Name::new("Cube"),
+    //     Mesh3d(meshes.add(Cuboid::default())),
+    //     MeshMaterial3d(materials.add(StandardMaterial {
+    //         base_color: BLUE.into(),
+    //         ..Default::default()
+    //     })),
+    //     Transform::from_xyz(0., 2., 0.)
+    // ));
 }
 
-// Draw a grid gizmo in the scene
-fn draw_grid(mut gizmos: Gizmos) {
-    gizmos.grid(
-        Isometry3d::new(
-            Vec3::new(0., 0.1, 0.),
-            Quat::from_rotation_x(PI/2.)
-        ),
-        UVec2::new(32, 32),
-        Vec2::splat(1.),
-        Color::srgba(1., 0.5, 0., 0.5),
-    );
-}
+
 
 fn test_system(q: Query<&Window>) {
     let cnt = q.iter().count();
@@ -136,11 +99,9 @@ fn place_point(
         // Get click pos in screenspace
         let Some(click_pos) = window.cursor_position() else {return;};
 
-        // Create ray from camera -> click pos
-        let Ok(ray) = camera.viewport_to_world(camera_transform, click_pos) else {return;};
-
-        // Get intersection point with ground
-        let Some(hit_point) = ray.plane_intersection_point(Vec3::ZERO, InfinitePlane3d::new(Vec3::Y)) else {return;};
+        let Some(hit_point) = ground_hit(camera, camera_transform, click_pos) else {
+            return;
+        };
 
         // Record pos   
         spline.points.push(hit_point);

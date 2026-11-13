@@ -6,6 +6,9 @@ pub struct SplineDraft {
     pub points: Vec<Vec3>,
 }
 
+const SPLINE_SAMPLES: usize = 100;
+const SPLINE_COLOR: Color = Color::srgb(1., 0., 0.);
+
 pub struct SplinePlugin;
 
 impl Plugin for SplinePlugin {
@@ -20,9 +23,6 @@ fn build_curve(points: &[Vec3]) -> Option<CubicCurve<Vec3>> {
 }
 
 fn draw_spline(spline: Res<SplineDraft>, mut gizmos: Gizmos) {
-    let SPLINE_SAMPLES = 100;
-    let SPLINE_COLOR = Color::srgb(1., 0., 0.);
-
     let Some(curve) = build_curve(&spline.points) else {
         return;
     };
