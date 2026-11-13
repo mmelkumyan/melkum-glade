@@ -4,7 +4,6 @@ use noise_functions::*;
 
 use std::f32::consts::PI;
 
-// Spline resource 
 #[derive(Resource)]
 pub struct Terrain {
     seed: i32,
@@ -26,7 +25,7 @@ impl Default for Terrain {
 
 impl Terrain {
     pub fn height_at(&self, x: f32, z:f32) -> f32 {
-        return Perlin.seed(self.seed).frequency(self.freq).sample2([x,z]) * self.amp;
+        Perlin.seed(self.seed).frequency(self.freq).sample2([x,z]) * self.amp
     }
 }
 

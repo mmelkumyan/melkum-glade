@@ -23,6 +23,17 @@ fn build_curve(points: &[Vec3]) -> Option<CubicCurve<Vec3>> {
 }
 
 fn draw_spline(spline: Res<SplineDraft>, mut gizmos: Gizmos) {
+    // Draw points
+    for p in spline.points.iter() {
+        gizmos.sphere(Isometry3d::new(
+            p + Dir3::Y * 0.1, 
+            Quat::default()), 
+            0.2, 
+            Color::WHITE
+        );
+    }
+
+    // Draw curve
     let Some(curve) = build_curve(&spline.points) else {
         return;
     };
