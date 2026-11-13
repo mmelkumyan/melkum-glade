@@ -4,6 +4,8 @@ use noise_functions::*;
 
 use std::f32::consts::PI;
 
+#[derive(Component)] pub struct Ground;
+
 #[derive(Resource)]
 pub struct Terrain {
     seed: i32,
@@ -63,6 +65,7 @@ fn generate_terrain(
     // Spawn ground
     cmds.spawn((
         Name::new("Ground"),
+        Ground, // Tag
         Mesh3d(meshes.add(ground)),
         MeshMaterial3d(materials.add(StandardMaterial {
             base_color: Color::srgba(0.2, 0.15, 0.1, 1.0),
@@ -81,13 +84,11 @@ fn draw_grid(mut gizmos: Gizmos) {
 }
 
 pub fn ground_hit(
-    camera: &Camera,
-    cam_transform: &GlobalTransform,
-    click_pos: Vec2,
+    ray: Ray3d,
+    ray_cast: &mut MeshRayCast,
+    ground: Entity
 ) -> Option<Vec3> {
-    // Create ray from camera -> click pos
-    let ray = camera.viewport_to_world(cam_transform, click_pos).ok()?;
-
-    // Get intersection point with ground
-    ray.plane_intersection_point(Vec3::ZERO, InfinitePlane3d::new(Vec3::Y))
+    let filter = &|e: Entity| e == ground;
+    let settings = MeshRayCastSettings::default().with_filter(filter);
+    ray_cast.cast_ray(ray, &settings).first().map(|(_, hit)| hit.point)
 }

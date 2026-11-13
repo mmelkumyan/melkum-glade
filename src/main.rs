@@ -13,7 +13,7 @@ mod camera;
 use camera::CameraPlugin;
 
 mod input;
-use input::DrawPlugin;
+use input::InputPlugin;
 
 fn main() {
     // PLUGINS
@@ -26,7 +26,7 @@ fn main() {
             CameraPlugin,
             TerrainPlugin,
             SplinePlugin,
-            DrawPlugin,
+            InputPlugin,
         ))
         .run();
 }
