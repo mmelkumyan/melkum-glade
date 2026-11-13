@@ -19,7 +19,7 @@ impl Plugin for SplinePlugin {
 }
 
 fn build_curve(points: &[Vec3]) -> Option<CubicCurve<Vec3>> {
-    return CubicCardinalSpline::new_catmull_rom(points.iter().copied()).to_curve().ok();
+    CubicCardinalSpline::new_catmull_rom(points.iter().copied()).to_curve().ok()
 }
 
 fn draw_spline(spline: Res<SplineDraft>, mut gizmos: Gizmos) {

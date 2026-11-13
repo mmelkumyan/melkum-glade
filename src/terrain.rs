@@ -81,5 +81,5 @@ pub fn ground_hit(camera: &Camera, cam_transform: &GlobalTransform, click_pos: V
     let ray = camera.viewport_to_world(cam_transform, click_pos).ok()?;
 
     // Get intersection point with ground
-    return ray.plane_intersection_point(Vec3::ZERO, InfinitePlane3d::new(Vec3::Y));
+    ray.plane_intersection_point(Vec3::ZERO, InfinitePlane3d::new(Vec3::Y))
 }
