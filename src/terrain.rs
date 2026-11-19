@@ -1,6 +1,9 @@
 use bevy::mesh::VertexAttributeValues;
 use bevy::prelude::*;
 use noise_functions::*;
+use bevy::pbr::{ExtendedMaterial, MaterialExtension, MaterialPlugin};
+use bevy::render::render_resource::AsBindGroup;
+use bevy::shader::ShaderRef;
 
 use std::f32::consts::PI;
 
@@ -38,14 +41,15 @@ impl Plugin for TerrainPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Terrain>()
             .add_systems(Startup, generate_terrain)
-            .add_systems(Update, draw_grid);
+            .add_systems(Update, draw_grid)
+            .add_plugins(MaterialPlugin::<TerrainMaterial>::default());
     }
 }
 
 fn generate_terrain(
     mut cmds: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut materials: ResMut<Assets<TerrainMaterial>>,
     terrain: Res<Terrain>,
 ) {
     // Generate ground mesh
@@ -68,9 +72,14 @@ fn generate_terrain(
         Name::new("Ground"),
         Ground, // Tag
         Mesh3d(meshes.add(ground)),
-        MeshMaterial3d(materials.add(StandardMaterial {
-            base_color: Color::srgba(0.2, 0.15, 0.1, 1.0),
-            ..Default::default()
+        MeshMaterial3d(materials.add(TerrainMaterial {
+            base: StandardMaterial {
+                base_color: Color::srgba(0.2, 0.2, 0.0, 1.0),
+                ..Default::default()
+            }, 
+            extension: TerrainExtMaterial {
+                height_scale: 1.0
+            }
         })),
     ));
 }
@@ -92,3 +101,19 @@ pub fn ground_hit(ray: Ray3d, ray_cast: &mut MeshRayCast, ground: Entity) -> Opt
         .first()
         .map(|(_, hit)| hit.point)
 }
+
+// SHADER SETUP
+
+#[derive(Asset, AsBindGroup, TypePath, Debug, Clone)]
+pub struct TerrainExtMaterial {
+    #[uniform(100)]
+    pub height_scale: f32,
+}
+
+impl MaterialExtension for TerrainExtMaterial {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/terrain_frag.wesl".into()
+    }
+}
+
+pub type TerrainMaterial = ExtendedMaterial<StandardMaterial, TerrainExtMaterial>;

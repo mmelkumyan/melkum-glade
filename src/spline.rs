@@ -3,7 +3,6 @@ use bevy::prelude::*;
 use crate::wall::Wall;
 
 const SPLINE_SAMPLES_PER_POINT: usize = 4;
-const SPLINE_COLOR: Color = Color::srgb(1., 0., 0.);
 const POINT_COLOR: Color = Color::srgba(1., 1., 1., 0.2);
 
 pub struct SplinePlugin;
